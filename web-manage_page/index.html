@@ -1,0 +1,53 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<title></title>
+	<link rel="stylesheet" href="">
+</head>
+<body>
+<h3>信息列表</h3>
+<table border="0" cellspacing="1" bgcolor="#000000" width="1000" style="text-align: center;">
+   <thead>
+    <tr bgcolor="#ffffff" style="font-weight: bold;">
+        <td>PID</td>
+        <td>DTYPE</td>
+        <td>CLIENT</td>
+        <td>TAGS</td>
+        <td>PASSWD</td>
+        <td>CREATED</td>
+        <td>UPDATED</td>
+    </tr>
+    </thead>
+    <tbody id="tcont" class="tcont" style="background-color: #fff">
+
+	</tbody>
+	</table>
+
+<p><button id="init_req" style="width: 80px;margin-left: 100px;" onclick="init_req()">刷新</button></p>
+
+
+<h3>更新数据</h3>
+<p>PID    : <input id="pid" type="text"></p>
+<p>DTYPE  : <input id="dtype" type="text"></p>
+<p>CLIENT : <input id="client" type="text"></p>
+<p>TAGS   : <input id="tags" type="text"></p>
+<p>PASSWD : <input id="passwd" type="text"></p>
+<p>CREATED: <input id="created" type="text"></p>
+<p>UPDATED: <input id="updated" type="text"></p>
+<p><button id="submit" style="width: 80px;margin-left: 100px;" onclick="submit()">提交</button></p>
+
+<p><button id="req" style="width: 80px;margin-left: 100px;" onclick="req()">请求</button></p>
+<p>Req IDs: <input id="Req ID" type="text" value="10000" placeholder="10000"></p>
+
+
+<h3>删除数据</h3>
+<p>Delete ID: <input id="delete_id" type="text"></p>
+<p><button id="delete_id" style="width: 80px;margin-left: 100px;" onclick="delete_id()">删除</button></p>
+
+</body>
+</html>
+<script src="robot-date.min.js"></script>
+
+<script src="app.js"></script>

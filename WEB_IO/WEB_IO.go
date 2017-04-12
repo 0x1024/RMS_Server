@@ -134,14 +134,14 @@ func GenPPL(ws *websocket.Conn) {
 	for nopass {
 		nopass = false
 		tmp = rand2.Uint64()
-		for n, v := range Public.LoginUser {
-			fmt.Printf("member %q,,%q  \r\nnn", n, v)
+		for _, v := range Public.LoginUser {
+			//fmt.Printf("member %q,,%q  \r\nnn", n, v)
 			if v.PplId == tmp {
 				nopass = true
 			}
 		}
 	}
-	fmt.Printf(" %s PPL is %d \r\n\n\n", ws, tmp)
+	//fmt.Printf(" %s PPL is %d \r\n\n\n", ws, tmp)
 	Public.LoginUser[ws].PplId = tmp
 }
 
@@ -157,7 +157,7 @@ func HB(ws *websocket.Conn) {
 	send.Data = ""
 	rec, _ := json.Marshal(send)
 	data_tmp := string(rec)
-
+	fmt.Println("addr", ws.Request().RemoteAddr)
 	for true {
 
 		if Public.LoginUser[ws] != nil {
@@ -166,10 +166,11 @@ func HB(ws *websocket.Conn) {
 			Senders.Dat = data_tmp
 			Public.LoginUser[ws].HBLife = Public.LoginUser[ws].HBLife + 1
 			if Public.LoginUser[ws].HBLife > 10 {
+				fmt.Println("closed by HB!! ")
 				ws.Close()
 			}
 		}
-		time.Sleep(time.Second * 3)
+		time.Sleep(time.Second * 10)
 	}
 }
 
@@ -177,7 +178,7 @@ func echoHandler(ws *websocket.Conn) {
 	var err error
 	var n int
 
-	fmt.Println(ws.Request().RemoteAddr)
+	fmt.Println("echoHandler ws addr ", ws.Request().RemoteAddr)
 
 	defer func() {
 		if err := recover(); err != nil {
@@ -195,8 +196,6 @@ func echoHandler(ws *websocket.Conn) {
 	defer ws.Close()
 	go sender()
 	go HB(ws)
-
-	fmt.Println(ws.RemoteAddr())
 
 	//bits := 1024
 	//if err := GenRsaKey(bits); err != nil {
@@ -223,6 +222,7 @@ func echoHandler(ws *websocket.Conn) {
 
 	//register current dialog
 	if _, ok := Public.LoginUser[ws]; !ok {
+		//fmt.Println("a,ok,ww",a,ok,Public.LoginUser[ws])
 		Public.LoginUser[ws] = new(Public.LoginType)
 		Public.LoginUser[ws].Name = "匿名"
 		Public.LoginUser[ws].Handle = ws
@@ -250,7 +250,7 @@ func echoHandler(ws *websocket.Conn) {
 			}
 		}
 
-		fmt.Printf("Receive: %s\n", msg)
+		fmt.Printf("Receive: %s\n", msg[:n])
 		DB_SAL.ReqProcess(ws, string(msg[:n]))
 
 	}
@@ -264,8 +264,8 @@ func sender() {
 		fmt.Printf("sender to send :%s\r\n", rec)
 		_, err := rec.Ws.Write([]byte(rec.Dat))
 		if err != nil {
-			fmt.Printf("1err %s\n", err)
-			fmt.Print(err)
+			fmt.Printf("sender err %s\n", err)
+			//fmt.Print(err)
 			switch {
 			case err == io.EOF:
 				goto Exit

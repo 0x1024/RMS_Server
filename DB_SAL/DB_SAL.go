@@ -152,8 +152,8 @@ func ReqProcess(ws *websocket.Conn, dat string) {
 	rrr = strings.TrimRight(dat, "\x00")
 
 	if err := json.Unmarshal([]byte(rrr), &dats); err == nil {
-		fmt.Printf("\r\nReqProcess   %q \r\n", dats) //debug
-		fmt.Println("cmd: ", dats["cmd"])            //debug
+		//fmt.Printf("\r\nReqProcess   %q \r\n", dats) //debug
+		//fmt.Println("cmd: ", dats["cmd"])            //debug
 	}
 
 	Senders := new(Public.Senders)
@@ -190,6 +190,8 @@ func ReqProcess(ws *websocket.Conn, dat string) {
 				Public.LoginUser[ws].Wlist = rolegroup.Wlist
 				Public.LoginUser[ws].Blist = rolegroup.Blist
 
+			} else if dats["cmd"] == "HB" {
+				Public.LoginUser[ws].HBLife = 0
 			} else {
 				send.Cmd = "auth_pwd_fault"
 				send.Data = ""
@@ -205,10 +207,11 @@ func ReqProcess(ws *websocket.Conn, dat string) {
 		//end of    auth login=====================================
 	} else {
 
-		fmt.Print("priv   ")
-		fmt.Printf("%b", Public.LoginUser[ws].Priv)
+		//fmt.Print("priv   ")
+		//fmt.Printf("%b", Public.LoginUser[ws].Priv)
 		switch dats["cmd"] {
 		case "req":
+			fmt.Printf("\npriv  %X  ", Public.LoginUser[ws].Priv)
 			if Public.LoginUser[ws].Priv&OP_Read != 0 {
 				sa1 := new(Pd_index)
 				re, _ := strconv.Atoi(dats["pid"])
@@ -224,6 +227,9 @@ func ReqProcess(ws *websocket.Conn, dat string) {
 
 				Senders.Dat = data_tmp
 				Public.DB2Ret <- Senders
+			} else {
+				send.Cmd = dats["cmd"]
+				authAct_NoPermition(Senders, send)
 			}
 		case "all":
 			if Public.LoginUser[ws].Priv&OP_Read != 0 {
@@ -240,6 +246,9 @@ func ReqProcess(ws *websocket.Conn, dat string) {
 				Senders.Dat = data_tmp
 				Public.DB2Ret <- Senders
 
+			} else {
+				send.Cmd = dats["cmd"]
+				authAct_NoPermition(Senders, send)
 			}
 		case "comitone":
 			if Public.LoginUser[ws].Priv&OP_Write != 0 {
@@ -274,6 +283,9 @@ func ReqProcess(ws *websocket.Conn, dat string) {
 				Senders.Dat = data_tmp
 				Public.DB2Ret <- Senders
 
+			} else {
+				send.Cmd = dats["cmd"]
+				authAct_NoPermition(Senders, send)
 			}
 		case "update":
 			if Public.LoginUser[ws].Priv&OP_Write != 0 {
@@ -295,6 +307,9 @@ func ReqProcess(ws *websocket.Conn, dat string) {
 				Senders.Dat = data_tmp
 				Public.DB2Ret <- Senders
 
+			} else {
+				send.Cmd = dats["cmd"]
+				authAct_NoPermition(Senders, send)
 			}
 		case "delete_id":
 			if Public.LoginUser[ws].Priv&OP_Delete != 0 {
@@ -320,6 +335,9 @@ func ReqProcess(ws *websocket.Conn, dat string) {
 				Senders.Dat = data_tmp
 				Public.DB2Ret <- Senders
 
+			} else {
+				send.Cmd = dats["cmd"]
+				authAct_NoPermition(Senders, send)
 			}
 		case "HB":
 			if Public.LoginUser[ws].Priv&OP_Ping != 0 {
@@ -415,4 +433,14 @@ func TypeConversion(value string, ntype string) (reflect.Value, error) {
 	//else if .......增加其他一些类型的转换
 
 	return reflect.ValueOf(value), errors.New("未知的类型：" + ntype)
+}
+
+func authAct_NoPermition(Senders *Public.Senders, send cmd) {
+	send.Data = fmt.Sprintf("%s,%s", send.Cmd, "No Permittion")
+	send.Cmd = ""
+	rec, _ := json.Marshal(send)
+	data_tmp := string(rec)
+
+	Senders.Dat = data_tmp
+	Public.DB2Ret <- Senders
 }
